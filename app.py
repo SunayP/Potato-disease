@@ -8,8 +8,12 @@ IMAGE_SIZE = 256
 CHANNELS = 3
 class_names = ['Potato___Early_blight', 'Potato___healthy', 'Potato___Late_blight']
 
-# Load the model
-model = tf.keras.models.load_model("Model/Model/1.keras")
+# Load the model with error handling
+try:
+    model = tf.keras.models.load_model("Model/Model/1.keras")
+except Exception as e:
+    st.error(f"Error loading model: {e}")
+    st.stop()
 
 # Information on each disease
 disease_info = {
@@ -24,7 +28,7 @@ disease_info = {
 }
 
 # Prediction function
-def predict_image(image, model, class_names):
+def predict_image(image, model):
     img = image.resize((IMAGE_SIZE, IMAGE_SIZE))
     img_array = tf.keras.preprocessing.image.img_to_array(img)
     img_array = np.expand_dims(img_array, 0) / 255.0  # Normalize
@@ -83,18 +87,19 @@ if uploaded_file is not None:
 
     # Classify button
     if st.button("🔍 Classify Image"):
-        predicted_class, confidence = predict_image(image, model, class_names)
-        
-        # Display prediction result
-        st.markdown(f"<p class='prediction-result'>Predicted Class: <strong>{predicted_class}</strong></p>", unsafe_allow_html=True)
-        st.markdown(f"<p class='prediction-result'>Confidence: <strong>{confidence}%</strong></p>", unsafe_allow_html=True)
-        
-        # Display additional disease information if the prediction is a disease
-        if predicted_class != "Potato___healthy":
-            st.markdown("<div class='info-box'>", unsafe_allow_html=True)
-            st.markdown(f"<h3>Disease Information</h3>", unsafe_allow_html=True)
-            st.markdown(f"**Cause**: {disease_info[predicted_class]['cause']}")
-            st.markdown(f"**Prevention**: {disease_info[predicted_class]['prevention']}")
-            st.markdown("</div>", unsafe_allow_html=True)
-        else:
-            st.success("The plant appears healthy! No disease detected.")
+        with st.spinner('Classifying...'):
+            predicted_class, confidence = predict_image(image, model)
+            
+            # Display prediction result
+            st.markdown(f"<p class='prediction-result'>Predicted Class: <strong>{predicted_class}</strong></p>", unsafe_allow_html=True)
+            st.markdown(f"<p class='prediction-result'>Confidence: <strong>{confidence}%</strong></p>", unsafe_allow_html=True)
+            
+            # Display additional disease information if the prediction is a disease
+            if predicted_class != "Potato___healthy":
+                st.markdown("<div class='info-box'>", unsafe_allow_html=True)
+                st.markdown(f"<h3>Disease Information</h3>", unsafe_allow_html=True)
+                st.markdown(f"**Cause**: {disease_info[predicted_class]['cause']}")
+                st.markdown(f"**Prevention**: {disease_info[predicted_class]['prevention']}")
+                st.markdown("</div>", unsafe_allow_html=True)
+            else:
+                st.success("The plant appears healthy! No disease detected.")
