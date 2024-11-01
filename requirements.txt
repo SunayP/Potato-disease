@@ -1,7 +1,7 @@
 absl-py==2.1.0
 altair==5.4.1
 numpy==2.0.2
-Pillow
+Pillow==1.39.0
 requests==2.32.3
 streamlit
 tensorflow==2.18.0
